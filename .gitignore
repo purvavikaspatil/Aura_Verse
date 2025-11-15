@@ -1,0 +1,21 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+
+# Local data files (do not push sample data)
+data/raw/
+data/cleaned/
+
+# Generated schemas
+schemas/
+
+# Secrets
+.env
+
+# Streamlit cache (if any)
+.streamlit/

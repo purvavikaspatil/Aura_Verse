@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic ETL Data Transformer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .hero-section h1 {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero-section p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        /* Login Card */
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .login-card h2 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* Password Input Wrapper */
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper input {
+            padding-right: 45px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.3s;
+            width: 24px;
+            height: 24px;
+        }
+
+        .password-toggle svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .password-toggle:hover {
+            color: #667eea;
+        }
+
+        .password-toggle:focus {
+            outline: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Main Content (Hidden Initially) */
+        .main-content {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .main-content.active {
+            display: block;
+        }
+
+        /* History Button */
+        .history-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .history-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .history-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+        }
+
+        /* History Modal */
+        .history-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .history-modal.active {
+            display: flex;
+        }
+
+        .history-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 80vh;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .history-header h2 {
+            color: #333;
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        .close-history {
+            background: #f5576c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .close-history:hover {
+            background: #e0455a;
+            transform: translateY(-1px);
+        }
+
+        .history-table-container {
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .history-table thead {
+            background: #f8f9ff;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .history-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .history-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #555;
+        }
+
+        .history-table tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        .history-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .file-type-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: #e8ebff;
+            color: #667eea;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-uploaded {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-transformed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .view-btn {
+            background: #667eea;
+            color: white;
+        }
+
+        .view-btn:hover {
+            background: #5568d3;
+        }
+
+        .delete-history-btn {
+            background: #f5576c;
+            color: white;
+        }
+
+        .delete-history-btn:hover {
+            background: #e0455a;
+        }
+
+        .no-history {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-style: italic;
+        }
+
+        .section-title {
+            color: #333;
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        /* File Upload Section */
+        .upload-section {
+            margin-bottom: 40px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            background: #f0f2ff;
+            border-color: #764ba2;
+        }
+
+        .upload-area.dragover {
+            background: #e8ebff;
+            border-color: #764ba2;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-name {
+            color: #667eea;
+            font-weight: 600;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .delete-file-btn {
+            background: #f5576c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .delete-file-btn:hover {
+            background: #e0455a;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(245, 87, 108, 0.3);
+        }
+
+        .delete-file-btn:active {
+            transform: translateY(0);
+        }
+
+        .delete-file-btn svg {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+        }
+
+        /* Preview Box */
+        .preview-box {
+            background: #f8f9ff;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .preview-box pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        .preview-label {
+            display: block;
+            margin-bottom: 10px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        /* Output Section */
+        .output-section {
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .output-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+            font-style: italic;
+        }
+
+        /* Toggle Link */
+        .toggle-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .toggle-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Signup Card (Hidden Initially) */
+        .signup-card {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .signup-card.active {
+            display: block;
+        }
+
+        /* Popup Modal */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup-overlay.active {
+            display: flex;
+        }
+
+        .popup {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .popup-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .popup h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .popup p {
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .popup .btn {
+            max-width: 200px;
+            margin: 0 auto;
+        }
+
+        .popup.error .popup-icon {
+            color: #f5576c;
+        }
+
+        .popup.success .popup-icon {
+            color: #4facfe;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+
+            .action-buttons,
+            .output-actions {
+                flex-direction: column;
+            }
+
+            .login-card,
+            .main-content {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero-section" id="heroSection">
+            <h1>Dynamic ETL Data Transformer</h1>
+            <p>Transform and organize your unstructured data with intelligent schema detection</p>
+            
+            <!-- Login Card -->
+            <div class="login-card" id="loginCard">
+                <h2>Welcome Back</h2>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                            <button type="button" class="password-toggle" id="togglePassword" aria-label="Toggle password visibility">
+                                <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg id="eyeSlashIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">Login</button>
+                    <div class="toggle-link" id="showSignup">Don't have an account? <strong>Sign Up</strong></div>
+                </form>
+            </div>
+
+            <!-- Signup Card -->
+            <div class="signup-card" id="signupCard">
+                <h2>Create Account</h2>
+                <form id="signupForm">
+                    <div class="form-group">
+                        <label for="signupEmail">Email</label>
+                        <input type="email" id="signupEmail" name="signupEmail" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupPassword">Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="signupPassword" name="signupPassword" placeholder="Create a password" required>
+                            <button type="button" class="password-toggle" id="toggleSignupPassword" aria-label="Toggle password visibility">
+                                <svg id="eyeIconSignup" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg id="eyeSlashIconSignup" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
+                            <button type="button" class="password-toggle" id="toggleConfirmPassword" aria-label="Toggle password visibility">
+                                <svg id="eyeIconConfirm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg id="eyeSlashIconConfirm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">Sign Up</button>
+                    <div class="toggle-link" id="showLogin">Already have an account? <strong>Login</strong></div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Content (Hidden Initially) -->
+        <div class="main-content" id="mainContent">
+            <!-- History Button -->
+            <button class="history-btn" id="historyBtn" title="View History">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                History
+            </button>
+
+            <!-- File Upload Section -->
+            <div class="upload-section">
+                <h2 class="section-title">Upload Your Data</h2>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">Drag & Drop your file here</div>
+                    <div class="upload-text" style="font-size: 0.9rem; color: #999;">or</div>
+                    <div class="upload-text" style="color: #667eea; font-weight: 600;">Click to upload</div>
+                    <div class="upload-text" style="font-size: 0.85rem; color: #999; margin-top: 10px;">Supported: JSON, TXT, CSV, XML, HTML, JS, CSS, LOG, PDF, MD</div>
+                    <input type="file" id="fileInput" class="file-input" accept=".json,.txt,.csv,.xml,.html,.js,.css,.log,.pdf,.md,.markdown">
+                    <div class="file-name" id="fileName"></div>
+                </div>
+
+                <div id="filePreview" style="display: none;">
+                    <label class="preview-label">File Preview:</label>
+                    <div class="preview-box">
+                        <pre id="previewContent"></pre>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="transformBtn" disabled>Transform Data</button>
+                </div>
+            </div>
+
+            <!-- Output Section -->
+            <div class="output-section">
+                <h2 class="section-title">Output</h2>
+                <div class="preview-box" id="outputBox">
+                    <div class="empty-state">No output yet. Upload a file and click Transform.</div>
+                </div>
+                <div class="output-actions">
+                    <button class="btn" id="downloadBtn" disabled>Download Transformed Data</button>
+                    <button class="btn btn-secondary" id="transformAgainBtn" disabled>Transform Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup Modal -->
+    <div class="popup-overlay" id="popupOverlay">
+        <div class="popup" id="popup">
+            <div class="popup-icon" id="popupIcon">⚠️</div>
+            <h3 id="popupTitle">Error</h3>
+            <p id="popupMessage">Something went wrong.</p>
+            <button class="btn" id="popupClose">OK</button>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div class="history-modal" id="historyModal">
+        <div class="history-content">
+            <div class="history-header">
+                <h2>File History</h2>
+                <button class="close-history" id="closeHistory">Close</button>
+            </div>
+            <div class="history-table-container">
+                <table class="history-table" id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>File Name</th>
+                            <th>Type</th>
+                            <th>Size</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <!-- History entries will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Backend API Configuration
+        // You can change this if your backend runs on a different port or URL
+        const API_BASE_URL = 'http://localhost:8000';  // FastAPI default port
+        
+        // Test backend connection on page load
+        async function testBackendConnection() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/`);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Backend connection successful:', data);
+                    return true;
+                }
+            } catch (error) {
+                console.error('Backend connection failed:', error);
+                // Show warning if backend is not available
+                setTimeout(() => {
+                    if (!sessionStorage.getItem('backendWarningShown')) {
+                        showPopup('error', 'Backend Not Connected', 
+                            `Cannot connect to backend at ${API_BASE_URL}. ` +
+                            `Please make sure the backend server is running. ` +
+                            `Start it with: uvicorn api:app --reload`);
+                        sessionStorage.setItem('backendWarningShown', 'true');
+                    }
+                }, 1000);
+                return false;
+            }
+            return false;
+        }
+        
+        // Test connection when page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            testBackendConnection();
+        });
+        
+        // DOM Elements
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const loginCard = document.getElementById('loginCard');
+        const signupCard = document.getElementById('signupCard');
+        const showSignup = document.getElementById('showSignup');
+        const showLogin = document.getElementById('showLogin');
+        const heroSection = document.getElementById('heroSection');
+        const mainContent = document.getElementById('mainContent');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileName = document.getElementById('fileName');
+        const filePreview = document.getElementById('filePreview');
+        const previewContent = document.getElementById('previewContent');
+        const transformBtn = document.getElementById('transformBtn');
+        const outputBox = document.getElementById('outputBox');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const transformAgainBtn = document.getElementById('transformAgainBtn');
+        const popupOverlay = document.getElementById('popupOverlay');
+        const popup = document.getElementById('popup');
+        const popupIcon = document.getElementById('popupIcon');
+        const popupTitle = document.getElementById('popupTitle');
+        const popupMessage = document.getElementById('popupMessage');
+        const popupClose = document.getElementById('popupClose');
+        const historyBtn = document.getElementById('historyBtn');
+        const historyModal = document.getElementById('historyModal');
+        const closeHistory = document.getElementById('closeHistory');
+        const historyTableBody = document.getElementById('historyTableBody');
+        const togglePassword = document.getElementById('togglePassword');
+        const toggleSignupPassword = document.getElementById('toggleSignupPassword');
+        const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+        const passwordInput = document.getElementById('password');
+        const signupPasswordInput = document.getElementById('signupPassword');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const eyeIcon = document.getElementById('eyeIcon');
+        const eyeSlashIcon = document.getElementById('eyeSlashIcon');
+        const eyeIconSignup = document.getElementById('eyeIconSignup');
+        const eyeSlashIconSignup = document.getElementById('eyeSlashIconSignup');
+        const eyeIconConfirm = document.getElementById('eyeIconConfirm');
+        const eyeSlashIconConfirm = document.getElementById('eyeSlashIconConfirm');
+
+        let currentFileContent = '';
+        let currentOutput = '';
+        let currentFile = null;
+        let currentHistoryId = null;
+        let uploadedFileData = null;  // Store uploaded file data for transform/organize
+
+        // Password Toggle Function
+        function togglePasswordVisibility(input, eyeIconElement, eyeSlashIconElement) {
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeIconElement.style.display = 'none';
+                eyeSlashIconElement.style.display = 'block';
+            } else {
+                input.type = 'password';
+                eyeIconElement.style.display = 'block';
+                eyeSlashIconElement.style.display = 'none';
+            }
+        }
+
+        // Password Toggle Event Listeners
+        togglePassword.addEventListener('click', () => {
+            togglePasswordVisibility(passwordInput, eyeIcon, eyeSlashIcon);
+        });
+
+        toggleSignupPassword.addEventListener('click', () => {
+            togglePasswordVisibility(signupPasswordInput, eyeIconSignup, eyeSlashIconSignup);
+        });
+
+        toggleConfirmPassword.addEventListener('click', () => {
+            togglePasswordVisibility(confirmPasswordInput, eyeIconConfirm, eyeSlashIconConfirm);
+        });
+
+        // Initialize: Load users from localStorage
+        function initUsers() {
+            if (!localStorage.getItem('users')) {
+                localStorage.setItem('users', JSON.stringify({}));
+            }
+        }
+
+        initUsers();
+
+        // Initialize: Load file history from localStorage
+        function initHistory() {
+            if (!localStorage.getItem('fileHistory')) {
+                localStorage.setItem('fileHistory', JSON.stringify([]));
+            }
+        }
+
+        initHistory();
+
+        // Get file history from localStorage
+        function getHistory() {
+            return JSON.parse(localStorage.getItem('fileHistory') || '[]');
+        }
+
+        // Save file history to localStorage
+        function saveHistory(history) {
+            localStorage.setItem('fileHistory', JSON.stringify(history));
+        }
+
+        // Add file to history
+        function addToHistory(file, status = 'uploaded') {
+            const history = getHistory();
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+            const historyEntry = {
+                id: Date.now().toString(),
+                fileName: file.name,
+                fileType: fileExtension.toUpperCase(),
+                fileSize: (file.size / 1024).toFixed(2) + ' KB',
+                status: status,
+                date: new Date().toLocaleString(),
+                originalContent: status === 'uploaded' ? currentFileContent : null,
+                transformedContent: status === 'transformed' ? currentOutput : null
+            };
+            history.unshift(historyEntry); // Add to beginning
+            // Keep only last 50 entries
+            if (history.length > 50) {
+                history.pop();
+            }
+            saveHistory(history);
+            return historyEntry.id;
+        }
+
+        // Update history entry status
+        function updateHistoryStatus(id, status, transformedContent) {
+            const history = getHistory();
+            const entry = history.find(item => item.id === id);
+            if (entry) {
+                entry.status = status;
+                entry.transformedContent = transformedContent;
+                saveHistory(history);
+            }
+        }
+
+        // Delete history entry
+        function deleteHistoryEntry(id) {
+            const history = getHistory();
+            const filtered = history.filter(item => item.id !== id);
+            saveHistory(filtered);
+            renderHistory();
+        }
+
+        // Render history table
+        function renderHistory() {
+            const history = getHistory();
+            historyTableBody.innerHTML = '';
+
+            if (history.length === 0) {
+                historyTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="no-history">No file history yet. Upload and transform files to see them here.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            history.forEach(entry => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${escapeHtml(entry.fileName)}</td>
+                    <td><span class="file-type-badge">${entry.fileType}</span></td>
+                    <td>${entry.fileSize}</td>
+                    <td>
+                        <span class="status-badge ${entry.status === 'uploaded' ? 'status-uploaded' : 'status-transformed'}">
+                            ${entry.status === 'uploaded' ? 'Uploaded' : 'Transformed'}
+                        </span>
+                    </td>
+                    <td>${entry.date}</td>
+                    <td>
+                        <div class="history-actions">
+                            <button class="action-btn view-btn" onclick="viewHistoryItem('${entry.id}')">View</button>
+                            <button class="action-btn delete-history-btn" onclick="deleteHistoryItem('${entry.id}')">Delete</button>
+                        </div>
+                    </td>
+                `;
+                historyTableBody.appendChild(row);
+            });
+        }
+
+        // View history item
+        window.viewHistoryItem = function(id) {
+            const history = getHistory();
+            const entry = history.find(item => item.id === id);
+            if (entry) {
+                const content = entry.transformedContent || entry.originalContent || 'No content available';
+                outputBox.innerHTML = `<pre>${escapeHtml(content)}</pre>`;
+                downloadBtn.disabled = false;
+                transformAgainBtn.disabled = false;
+                currentOutput = content;
+                hideHistory();
+                // Scroll to output section
+                outputBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        };
+
+        // Delete history item
+        window.deleteHistoryItem = function(id) {
+            if (confirm('Are you sure you want to delete this history entry?')) {
+                deleteHistoryEntry(id);
+            }
+        };
+
+        // Show history modal
+        function showHistory() {
+            renderHistory();
+            historyModal.classList.add('active');
+        }
+
+        // Hide history modal
+        function hideHistory() {
+            historyModal.classList.remove('active');
+        }
+
+        // History button click
+        historyBtn.addEventListener('click', showHistory);
+
+        // Close history modal
+        closeHistory.addEventListener('click', hideHistory);
+        historyModal.addEventListener('click', (e) => {
+            if (e.target === historyModal) {
+                hideHistory();
+            }
+        });
+
+        // Get users from localStorage
+        function getUsers() {
+            return JSON.parse(localStorage.getItem('users') || '{}');
+        }
+
+        // Save user to localStorage
+        function saveUser(email, password) {
+            const users = getUsers();
+            users[email.toLowerCase()] = password;
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+
+        // Check if user exists
+        function userExists(email) {
+            const users = getUsers();
+            return email.toLowerCase() in users;
+        }
+
+        // Validate login credentials
+        function validateLogin(email, password) {
+            const users = getUsers();
+            const storedPassword = users[email.toLowerCase()];
+            return storedPassword === password;
+        }
+
+        // Show popup
+        function showPopup(type, title, message) {
+            popup.className = `popup ${type}`;
+            popupTitle.textContent = title;
+            popupMessage.textContent = message;
+            
+            if (type === 'error') {
+                popupIcon.textContent = '⚠️';
+            } else if (type === 'success') {
+                popupIcon.textContent = '✅';
+            }
+            
+            popupOverlay.classList.add('active');
+        }
+
+        // Hide popup
+        function hidePopup() {
+            popupOverlay.classList.remove('active');
+        }
+
+        popupClose.addEventListener('click', hidePopup);
+        popupOverlay.addEventListener('click', (e) => {
+            if (e.target === popupOverlay) {
+                hidePopup();
+            }
+        });
+
+        // Toggle between Login and Signup
+        showSignup.addEventListener('click', () => {
+            loginCard.style.display = 'none';
+            signupCard.classList.add('active');
+        });
+
+        showLogin.addEventListener('click', () => {
+            signupCard.classList.remove('active');
+            loginCard.style.display = 'block';
+        });
+
+        // Signup Handler
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                showPopup('error', 'Signup Failed', 'Passwords do not match. Please try again.');
+                return;
+            }
+
+            // Check if user already exists
+            if (userExists(email)) {
+                showPopup('error', 'Signup Failed', 'An account with this email already exists. Please login instead.');
+                return;
+            }
+
+            // Save user
+            saveUser(email, password);
+            showPopup('success', 'Account Created', 'Your account has been created successfully! Redirecting...');
+            
+            // Clear form
+            signupForm.reset();
+            
+            // Automatically log in and show main content after a brief delay
+            setTimeout(() => {
+                hidePopup();
+                
+                // Hide signup card and hero section
+                signupCard.classList.remove('active');
+                loginCard.style.display = 'none';
+                heroSection.style.display = 'none';
+                
+                // Show main content (upload/transform page)
+                mainContent.classList.add('active');
+            }, 1500);
+        });
+
+        // Login Handler
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Validate credentials
+            if (!userExists(email)) {
+                showPopup('error', 'Login Failed', 'Incorrect email or password. Please try again.');
+                return;
+            }
+
+            if (!validateLogin(email, password)) {
+                showPopup('error', 'Login Failed', 'Incorrect email or password. Please try again.');
+                return;
+            }
+
+            // Successful login
+            hidePopup();
+            
+            // Hide login card and hero section
+            loginCard.style.display = 'none';
+            signupCard.classList.remove('active');
+            heroSection.style.display = 'none';
+            
+            // Show main content
+            mainContent.classList.add('active');
+        });
+
+        // File Input Click
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // File Input Change
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        });
+
+        // Drag and Drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                fileInput.files = e.dataTransfer.files;
+                handleFile(file);
+            }
+        });
+
+        // Handle File - Upload to Backend
+        async function handleFile(file) {
+            currentFile = file;
+            
+            // Display file name with delete button
+            fileName.innerHTML = `
+                <div class="file-info">
+                    <span>📄 ${file.name}</span>
+                    <span style="color: #999; font-size: 0.9rem;">(${(file.size / 1024).toFixed(2)} KB)</span>
+                    <span id="uploadStatus" style="margin-left: 10px; font-size: 0.85rem; color: #667eea;">Uploading...</span>
+                </div>
+                <button type="button" class="delete-file-btn" id="deleteFileBtn" title="Remove file">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                    </svg>
+                    Remove
+                </button>
+            `;
+            
+            // Disable buttons during upload
+            transformBtn.disabled = true;
+            
+            // Read file as text for preview
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                currentFileContent = e.target.result;
+                previewContent.textContent = currentFileContent;
+                filePreview.style.display = 'block';
+                
+                // Upload file to backend
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    
+                    const response = await fetch(`${API_BASE_URL}/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ detail: 'Upload failed' }));
+                        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    uploadedFileData = result;
+                    
+                    // Update upload status
+                    const uploadStatus = document.getElementById('uploadStatus');
+                    if (uploadStatus) {
+                        uploadStatus.textContent = '✓ Uploaded';
+                        uploadStatus.style.color = '#4facfe';
+                    }
+                    
+                    // Enable buttons
+                    transformBtn.disabled = false;
+                    
+                    // Add to history
+                    currentHistoryId = addToHistory(file, 'uploaded');
+                    
+                    // Show success message
+                    showPopup('success', 'File Uploaded', `File uploaded successfully! ${result.data_structure.records_count} records detected.`);
+                } catch (error) {
+                    console.error('Upload error:', error);
+                    const uploadStatus = document.getElementById('uploadStatus');
+                    if (uploadStatus) {
+                        uploadStatus.textContent = '✗ Upload Failed';
+                        uploadStatus.style.color = '#f5576c';
+                    }
+                    const errorMsg = error.message.includes('Failed to fetch') || error.message.includes('NetworkError') 
+                        ? `Cannot connect to backend server at ${API_BASE_URL}. Please make sure the server is running. Start it with: uvicorn api:app --reload`
+                        : `Failed to upload file: ${error.message}`;
+                    showPopup('error', 'Upload Failed', errorMsg);
+                }
+            };
+            reader.onerror = () => {
+                showPopup('error', 'File Read Error', 'Unable to read the file. Please try a different file.');
+            };
+            reader.readAsText(file);
+            
+            // Add delete button event listener
+            const deleteBtn = document.getElementById('deleteFileBtn');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', removeFile);
+            }
+        }
+
+        // Remove File
+        function removeFile() {
+            // Clear file input
+            fileInput.value = '';
+            
+            // Reset state
+            currentFile = null;
+            currentFileContent = '';
+            currentOutput = '';
+            currentHistoryId = null;
+            uploadedFileData = null;
+            
+            // Clear UI
+            fileName.innerHTML = '';
+            filePreview.style.display = 'none';
+            previewContent.textContent = '';
+            
+            // Disable buttons
+            transformBtn.disabled = true;
+            organizeBtn.disabled = true;
+            downloadBtn.disabled = true;
+            transformAgainBtn.disabled = true;
+            
+            // Reset output
+            outputBox.innerHTML = '<div class="empty-state">No output yet. Upload a file and click Transform.</div>';
+        }
+
+        // Transform Data - Call Backend API
+        transformBtn.addEventListener('click', async () => {
+            if (!currentFile) {
+                showPopup('error', 'No File', 'Please upload a file first.');
+                return;
+            }
+            
+            // Disable button during processing
+            transformBtn.disabled = true;
+            transformBtn.textContent = 'Transforming...';
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', currentFile);
+                
+                const response = await fetch(`${API_BASE_URL}/transform`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    // Try to get error message as text
+                    const errorText = await response.text().catch(() => 'Transform failed');
+                    throw new Error(errorText || `HTTP error! status: ${response.status}`);
+                }
+                
+                // Get raw formatted content (not JSON)
+                const formattedContent = await response.text();
+                
+                // Display the formatted content directly
+                displayOutput(formattedContent, formattedContent);
+                
+                // Store formatted file for download
+                window.currentFormattedFile = formattedContent;
+                window.currentFileType = currentFile.name.split('.').pop() || 'txt';
+                
+                // Update history status to transformed
+                if (currentHistoryId) {
+                    updateHistoryStatus(currentHistoryId, 'transformed', formattedContent);
+                }
+                
+                // Calculate line count for success message
+                const lineCount = formattedContent.split('\n').length;
+                showPopup('success', 'Transformation Complete', `Successfully transformed and formatted your file! (${lineCount} lines)`);
+            } catch (error) {
+                console.error('Transform error:', error);
+                console.error('Error details:', {
+                    message: error.message,
+                    stack: error.stack,
+                    name: error.name
+                });
+                
+                let errorMsg = '';
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError') || error.message.includes('ERR_CONNECTION_REFUSED')) {
+                    errorMsg = `Cannot connect to backend server at ${API_BASE_URL}. Please make sure the server is running. Start it with: python start_server.py`;
+                } else {
+                    errorMsg = `Failed to transform data: ${error.message}`;
+                }
+                
+                showPopup('error', 'Transform Failed', errorMsg);
+            } finally {
+                transformBtn.disabled = false;
+                transformBtn.textContent = 'Transform Data';
+            }
+        });
+
+
+        // Display Output
+        function displayOutput(content, fullData = null) {
+            // Store the formatted content for display
+            outputBox.innerHTML = `<pre>${escapeHtml(content)}</pre>`;
+            
+            // Store full data for download if provided, otherwise use content
+            if (fullData) {
+                currentOutput = typeof fullData === 'string' ? fullData : JSON.stringify(fullData, null, 2);
+            } else {
+                currentOutput = content;
+            }
+            
+            downloadBtn.disabled = false;
+            transformAgainBtn.disabled = false;
+        }
+
+        // Download Output
+        downloadBtn.addEventListener('click', () => {
+            if (!currentOutput) {
+                showPopup('error', 'No Data', 'No data available to download.');
+                return;
+            }
+            
+            // Determine file extension based on original file or content
+            let filename = 'processed_data';
+            let mimeType = 'text/plain';
+            
+            if (currentFile && currentFile.name) {
+                // Preserve original filename but add prefix
+                const originalName = currentFile.name;
+                const lastDot = originalName.lastIndexOf('.');
+                if (lastDot > 0) {
+                    const nameWithoutExt = originalName.substring(0, lastDot);
+                    const ext = originalName.substring(lastDot);
+                    // Use "transformed" prefix for all transform output
+                    filename = `${nameWithoutExt}_transformed${ext}`;
+                } else {
+                    filename = `${originalName}_transformed`;
+                }
+                
+                // Set MIME type based on extension
+                const ext = filename.toLowerCase().split('.').pop();
+                if (ext === 'json') {
+                    mimeType = 'application/json';
+                } else if (ext === 'html' || ext === 'htm') {
+                    mimeType = 'text/html';
+                } else if (ext === 'xml') {
+                    mimeType = 'application/xml';
+                } else if (ext === 'csv') {
+                    mimeType = 'text/csv';
+                } else if (ext === 'md' || ext === 'markdown') {
+                    mimeType = 'text/markdown';
+                } else {
+                    mimeType = 'text/plain';
+                }
+            } else {
+                // Fallback: try to detect from content
+                try {
+                    JSON.parse(currentOutput);
+                    filename = 'processed_data.json';
+                    mimeType = 'application/json';
+                } catch (e) {
+                    filename = 'processed_data.txt';
+                    mimeType = 'text/plain';
+                }
+            }
+            
+            // Use formatted file if available (for all file types from transform)
+            const downloadContent = window.currentFormattedFile || currentOutput;
+            const blob = new Blob([downloadContent], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showPopup('success', 'Download Started', 'Your processed data is being downloaded.');
+        });
+
+        // Transform Again
+        transformAgainBtn.addEventListener('click', () => {
+            // Reset output
+            outputBox.innerHTML = '<div class="empty-state">No output yet. Upload a file and click Transform.</div>';
+            downloadBtn.disabled = true;
+            transformAgainBtn.disabled = true;
+            currentOutput = '';
+        });
+
+        // Helper Functions
+        function detectSchema(content) {
+            try {
+                const parsed = JSON.parse(content);
+                if (Array.isArray(parsed)) {
+                    return 'Array Schema';
+                } else if (typeof parsed === 'object') {
+                    return `Object Schema (${Object.keys(parsed).length} fields)`;
+                }
+            } catch (e) {
+                return 'Text/Unstructured Schema';
+            }
+            return 'Unknown Schema';
+        }
+
+        function formatOrganizedData(content) {
+            try {
+                const parsed = JSON.parse(content);
+                if (typeof parsed === 'object') {
+                    const sorted = {};
+                    Object.keys(parsed).sort().forEach(key => {
+                        sorted[key] = parsed[key];
+                    });
+                    return JSON.stringify(sorted, null, 2);
+                }
+            } catch (e) {
+                // If not JSON, return organized text
+                return content.split('\n').sort().join('\n');
+            }
+            return content;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
+

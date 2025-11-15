@@ -1,0 +1,11 @@
+pandas
+genson
+pymongo
+requests
+fastapi
+uvicorn
+streamlit
+schedule
+python-dotenv
+python-multipart
+beautifulsoup4
